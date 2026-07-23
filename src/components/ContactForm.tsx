@@ -2,38 +2,44 @@
 
 import { useState, type FormEvent } from "react";
 import { motion } from "framer-motion";
-import { CheckCircle2, Send } from "lucide-react";
+import { AlertCircle, CheckCircle2, Send } from "lucide-react";
+
+type Status = "idle" | "sending" | "sent" | "error";
 
 export default function ContactForm() {
-  const [sent, setSent] = useState(false);
+  const [status, setStatus] = useState<Status>("idle");
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const data = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const data = new FormData(form);
     const nome = data.get("nome")?.toString() ?? "";
     const email = data.get("email")?.toString() ?? "";
     const telefono = data.get("telefono")?.toString() ?? "";
     const messaggio = data.get("messaggio")?.toString() ?? "";
 
-    const subject = `Richiesta dal sito da parte di ${nome}`;
-    const body = [
-      `Nome: ${nome}`,
-      `Email: ${email}`,
-      telefono ? `Telefono: ${telefono}` : null,
-      "",
-      messaggio,
-    ]
-      .filter(Boolean)
-      .join("\n");
+    setStatus("sending");
 
-    window.location.href = `mailto:intheboxstudio.smm@gmail.com?subject=${encodeURIComponent(
-      subject,
-    )}&body=${encodeURIComponent(body)}`;
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nome, email, telefono, messaggio }),
+      });
 
-    setSent(true);
+      if (!res.ok) {
+        setStatus("error");
+        return;
+      }
+
+      setStatus("sent");
+      form.reset();
+    } catch {
+      setStatus("error");
+    }
   };
 
-  if (sent) {
+  if (status === "sent") {
     return (
       <motion.div
         initial={{ opacity: 0, y: 16 }}
@@ -42,18 +48,10 @@ export default function ContactForm() {
         className="glass mx-auto max-w-xl rounded-3xl px-8 py-16 text-center"
       >
         <CheckCircle2 className="mx-auto h-10 w-10 text-accent" />
-        <h2 className="mt-4 text-2xl font-semibold">Quasi fatto</h2>
+        <h2 className="mt-4 text-2xl font-semibold">Messaggio inviato</h2>
         <p className="mt-2 text-muted">
-          Si è aperto il tuo programma di posta con il messaggio già
-          compilato: ti basta premere invia. Se non si è aperto nulla,
-          scrivimi direttamente a{" "}
-          <a
-            href="mailto:intheboxstudio.smm@gmail.com"
-            className="text-accent hover:underline"
-          >
-            intheboxstudio.smm@gmail.com
-          </a>
-          .
+          Grazie, il tuo messaggio mi è arrivato direttamente via email. Ti
+          rispondo il prima possibile.
         </p>
       </motion.div>
     );
@@ -123,16 +121,28 @@ export default function ContactForm() {
         />
       </div>
 
+      {status === "error" && (
+        <div className="mt-4 flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+          <AlertCircle className="h-4 w-4 shrink-0" />
+          Invio non riuscito. Riprova o scrivimi direttamente a{" "}
+          <a href="mailto:intheboxstudio.smm@gmail.com" className="underline">
+            intheboxstudio.smm@gmail.com
+          </a>
+          .
+        </div>
+      )}
+
       <button
         type="submit"
-        className="group mt-6 inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-semibold text-background transition-transform hover:scale-105"
+        disabled={status === "sending"}
+        className="group mt-6 inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-semibold text-background transition-transform hover:scale-105 disabled:opacity-60 disabled:hover:scale-100"
       >
-        Invia messaggio
+        {status === "sending" ? "Invio in corso..." : "Invia messaggio"}
         <Send className="h-4 w-4 transition-transform group-hover:translate-x-1" />
       </button>
 
       <p className="mt-4 text-xs text-muted">
-        Inviando il modulo si aprirà il tuo programma di posta predefinito.
+        Inviando il modulo il messaggio mi arriva direttamente via email.
         Consulta la{" "}
         <a href="/privacy" className="underline hover:text-foreground">
           privacy policy

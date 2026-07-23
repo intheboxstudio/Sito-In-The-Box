@@ -24,6 +24,29 @@ const SCRIPTS: Line[][] = [
     { type: "cmd", text: "scheduler.send_followups()" },
     { type: "out", text: "→ follow-up inviati, nessun intervento manuale richiesto" },
   ],
+  [
+    { type: "cmd", text: 'social_agent.generate_calendar(weeks=2)' },
+    { type: "out", text: "→ 14 post creati con copy, hashtag e immagine" },
+    { type: "cmd", text: "social_agent.schedule_posts()" },
+    { type: "out", text: "→ pubblicazione programmata su Instagram e LinkedIn" },
+    { type: "cmd", text: "social_agent.reply_to_comments()" },
+    { type: "out", text: "→ 23 commenti letti, 19 risposte automatiche inviate" },
+  ],
+  [
+    { type: "cmd", text: 'invoice_agent.read_inbox()' },
+    { type: "out", text: "→ 8 fatture fornitori trovate negli allegati" },
+    { type: "cmd", text: "invoice_agent.extract_data()" },
+    { type: "out", text: "→ importi, scadenze e P.IVA estratti automaticamente" },
+    { type: "cmd", text: "invoice_agent.sync_to_gestionale()" },
+    { type: "out", text: "→ 8 fatture registrate, 0 inserite manualmente" },
+  ],
+  [
+    { type: "cmd", text: 'booking_agent.handle_whatsapp("Vorrei prenotare per venerdì")' },
+    { type: "out", text: "→ disponibilità controllata sul calendario" },
+    { type: "out", text: "→ appuntamento confermato e promemoria impostato" },
+    { type: "cmd", text: "booking_agent.send_reminder(hours_before=24)" },
+    { type: "out", text: "→ promemoria inviato, 0 no-show questa settimana" },
+  ],
 ];
 
 function useTerminalScript(active: boolean) {
@@ -117,7 +140,7 @@ export default function TerminalDemo() {
             Cosa succede dietro le quinte
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-muted">
-            Un esempio reale di come lavora uno dei miei agenti, dall&apos;analisi
+            Alcuni esempi reali di come lavorano i miei agenti, dall&apos;analisi
             al risultato finale.
           </p>
         </motion.div>
