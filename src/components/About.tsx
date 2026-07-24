@@ -15,7 +15,7 @@ const STATS = [
 
 export default function About() {
   return (
-    <section id="chi-sono" className="px-6 py-32">
+    <section id="chi-sono" className="px-6 pb-32 pt-40">
       <div className="mx-auto grid max-w-6xl grid-cols-1 gap-16 lg:grid-cols-2 lg:items-center">
         <motion.div
           initial={{ opacity: 0, x: -24 }}

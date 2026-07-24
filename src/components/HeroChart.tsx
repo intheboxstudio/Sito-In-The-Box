@@ -35,6 +35,7 @@ export default function HeroChart() {
       }}
     >
       <motion.div
+        initial={{ opacity: 0 }}
         animate={{ opacity: [0, 1, 1, 0] }}
         transition={{
           duration: CYCLE,
@@ -42,7 +43,11 @@ export default function HeroChart() {
           ease: "easeInOut",
           repeat: Infinity,
         }}
-        className="h-full w-full"
+        // Starts hidden via the opacity-0 class so the browser paints nothing
+        // before hydration — without it, the SSR markup shows the fully
+        // drawn path for a frame (visible as a flash, worst on slower mobile
+        // hydration) before Framer Motion attaches and resets it to 0.
+        className="h-full w-full opacity-0"
       >
         <svg viewBox="0 0 800 200" preserveAspectRatio="none" className="h-full w-full">
           <motion.path
@@ -53,6 +58,7 @@ export default function HeroChart() {
             strokeLinecap="round"
             strokeLinejoin="round"
             className="opacity-50 blur-xl"
+            initial={{ pathLength: 0 }}
             animate={{ pathLength: [0, 0, 1, 1] }}
             transition={{
               duration: CYCLE,
@@ -68,6 +74,7 @@ export default function HeroChart() {
             strokeWidth={2.5}
             strokeLinecap="round"
             strokeLinejoin="round"
+            initial={{ pathLength: 0 }}
             animate={{ pathLength: [0, 0, 1, 1] }}
             transition={{
               duration: CYCLE,
@@ -84,6 +91,7 @@ export default function HeroChart() {
             cy={75}
             r={5}
             fill="#ff3b3b"
+            initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: [0, 0, 1.6, 1], opacity: [0, 0, 1, 1] }}
             transition={{
               duration: CYCLE,

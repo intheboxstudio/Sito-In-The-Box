@@ -83,7 +83,7 @@ export default function Hero() {
         </motion.div>
       </div>
 
-      <CodeBackdrop className="hidden sm:block inset-x-0 bottom-0 -z-10 h-56 sm:h-72" />
+      <CodeBackdrop className="hidden sm:block inset-x-0 bottom-0 -z-10 h-[clamp(9rem,24vh,18rem)]" />
     </section>
   );
 }
