@@ -120,7 +120,7 @@ export default function Process() {
   ];
 
   return (
-    <section id="come-lavoro" className="px-6 py-32">
+    <section id="come-lavoro" className="px-6 pb-32 pt-20">
       <div className="mx-auto max-w-6xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
