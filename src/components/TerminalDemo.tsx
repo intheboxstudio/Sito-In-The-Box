@@ -127,7 +127,7 @@ export default function TerminalDemo() {
   const { lines, typing } = useTerminalScript(inView && !reduceMotion);
 
   return (
-    <section className="px-6 py-32">
+    <section className="px-6 py-16 sm:py-32">
       <div className="mx-auto max-w-4xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

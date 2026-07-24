@@ -6,7 +6,7 @@ import MagneticButton from "./MagneticButton";
 
 export default function Contact() {
   return (
-    <section id="contatti" className="px-6 py-32">
+    <section id="contatti" className="px-6 pb-32 pt-16 sm:pt-32">
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         whileInView={{ opacity: 1, y: 0 }}
