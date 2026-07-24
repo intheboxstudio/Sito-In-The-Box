@@ -16,10 +16,27 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const SITE_TITLE = "IN THE BOX STUDIO | Agenti AI & Automazione Aziendale";
+const SITE_DESCRIPTION =
+  "Agenti AI, automazione aziendale, chatbot e cloni virtuali, siti con blog scritti dall'AI, social media management e copywriting.";
+
 export const metadata: Metadata = {
-  title: "IN THE BOX STUDIO | Agenti AI & Automazione Aziendale",
-  description:
-    "Agenti AI, automazione aziendale, chatbot e cloni virtuali, siti con blog scritti dall'AI, social media management e copywriting.",
+  metadataBase: new URL("https://intheboxstudio.it"),
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    url: "https://intheboxstudio.it",
+    siteName: "IN THE BOX STUDIO",
+    locale: "it_IT",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
 };
 
 export default function RootLayout({

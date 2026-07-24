@@ -47,52 +47,45 @@ const item = {
   show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const } },
 };
 
-// Icon centers for a 4-column grid (12.5%, 37.5%, 62.5%, 87.5%). The neon
-// line and dot travel step-by-step between them: arrive, hold briefly, move
-// to the next, fading out right at the end so the reset back to the start
-// happens while invisible instead of as a visible jump.
-const H_STOPS = [12.5, 37.5, 62.5, 87.5];
+// The neon line and dot travel step-by-step between icon centers: arrive,
+// hold briefly, move to the next, fading out right at the end so the reset
+// back to the start happens while invisible instead of as a visible jump.
 const CYCLE = 7;
 const TIMES = [0, 0.08, 0.28, 0.4, 0.6, 0.72, 0.92, 1];
-const H_DOT_LEFT = [
-  `${H_STOPS[0]}%`, `${H_STOPS[0]}%`,
-  `${H_STOPS[1]}%`, `${H_STOPS[1]}%`,
-  `${H_STOPS[2]}%`, `${H_STOPS[2]}%`,
-  `${H_STOPS[3]}%`, `${H_STOPS[3]}%`,
-];
-const H_FILL_WIDTH = [
-  "0%", "0%",
-  `${H_STOPS[1] - H_STOPS[0]}%`, `${H_STOPS[1] - H_STOPS[0]}%`,
-  `${H_STOPS[2] - H_STOPS[0]}%`, `${H_STOPS[2] - H_STOPS[0]}%`,
-  `${H_STOPS[3] - H_STOPS[0]}%`, `${H_STOPS[3] - H_STOPS[0]}%`,
-];
 const GLOW_OPACITY = [1, 1, 1, 1, 1, 1, 1, 0];
+
+type Point = { x: number; y: number };
 
 export default function Process() {
   const gridRef = useRef<HTMLDivElement>(null);
   const iconRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const [vStops, setVStops] = useState<number[] | null>(null);
+  const [points, setPoints] = useState<Point[] | null>(null);
+  const [size, setSize] = useState({ width: 0, height: 0 });
 
-  // Mobile stacks the steps in a single column, so the neon line/dot travel
-  // vertically between icon centers instead of horizontally. Icon heights
-  // vary with description length, so the stop positions are measured from
-  // the DOM (via offsetTop, which ignores the entrance animation's
-  // transform) rather than assumed from fixed percentages.
+  // The grid reflows from 1 to 2 to 4 columns across breakpoints, so the
+  // connecting line is drawn from the icons' real measured centers rather
+  // than an assumed layout — it automatically follows whatever order the
+  // icons land in at any screen size, tablet included. Positions come from
+  // the offsetLeft/offsetTop chain (unaffected by the entrance animation's
+  // transform) instead of getBoundingClientRect.
   useEffect(() => {
     const measure = () => {
       const grid = gridRef.current;
       if (!grid) return;
-      const centers = iconRefs.current.map((icon) => {
-        if (!icon) return 0;
-        let top = 0;
+      const pts = iconRefs.current.map((icon) => {
+        if (!icon) return { x: 0, y: 0 };
+        let x = 0;
+        let y = 0;
         let el: HTMLElement | null = icon;
         while (el && el !== grid) {
-          top += el.offsetTop;
+          x += el.offsetLeft;
+          y += el.offsetTop;
           el = el.offsetParent as HTMLElement | null;
         }
-        return top + icon.offsetHeight / 2;
+        return { x: x + icon.offsetWidth / 2, y: y + icon.offsetHeight / 2 };
       });
-      setVStops(centers);
+      setPoints(pts);
+      setSize({ width: grid.clientWidth, height: grid.clientHeight });
     };
 
     measure();
@@ -105,19 +98,37 @@ export default function Process() {
     };
   }, []);
 
-  const vBase = vStops?.[0] ?? 0;
-  const V_DOT_TOP = vStops && [
-    `${vStops[0]}px`, `${vStops[0]}px`,
-    `${vStops[1]}px`, `${vStops[1]}px`,
-    `${vStops[2]}px`, `${vStops[2]}px`,
-    `${vStops[3]}px`, `${vStops[3]}px`,
-  ];
-  const V_FILL_HEIGHT = vStops && [
-    "0px", "0px",
-    `${vStops[1] - vBase}px`, `${vStops[1] - vBase}px`,
-    `${vStops[2] - vBase}px`, `${vStops[2] - vBase}px`,
-    `${vStops[3] - vBase}px`, `${vStops[3] - vBase}px`,
-  ];
+  let pathD: string | null = null;
+  let pathLengthKeyframes: number[] | null = null;
+  let dotX: number[] | null = null;
+  let dotY: number[] | null = null;
+
+  if (points && points.length === STEPS.length) {
+    pathD = `M ${points.map((p) => `${p.x},${p.y}`).join(" L ")}`;
+
+    const segmentLengths = points.slice(0, -1).map((p, i) => {
+      const next = points[i + 1];
+      return Math.hypot(next.x - p.x, next.y - p.y);
+    });
+    const total = segmentLengths.reduce((a, b) => a + b, 0) || 1;
+    const cumulative = [0];
+    segmentLengths.forEach((len) => cumulative.push(cumulative[cumulative.length - 1] + len));
+    const frac = cumulative.map((c) => c / total);
+
+    pathLengthKeyframes = [0, 0, frac[1], frac[1], frac[2], frac[2], frac[3], frac[3]];
+    dotX = [
+      points[0].x, points[0].x,
+      points[1].x, points[1].x,
+      points[2].x, points[2].x,
+      points[3].x, points[3].x,
+    ];
+    dotY = [
+      points[0].y, points[0].y,
+      points[1].y, points[1].y,
+      points[2].y, points[2].y,
+      points[3].y, points[3].y,
+    ];
+  }
 
   return (
     <section id="come-lavoro" className="px-6 pb-16 pt-20 sm:pb-32">
@@ -144,64 +155,34 @@ export default function Process() {
           viewport={{ once: true, margin: "-100px" }}
           className="relative grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4"
         >
-          <div className="pointer-events-none absolute left-0 right-0 top-8 hidden h-px bg-gradient-to-r from-transparent via-border to-transparent lg:block" />
-
-          <motion.div
-            aria-hidden
-            className="pointer-events-none absolute top-8 hidden h-px lg:block"
-            style={{
-              left: `${H_STOPS[0]}%`,
-              background: "linear-gradient(to right, transparent, var(--accent-2))",
-              boxShadow: "0 0 8px var(--accent-2)",
-            }}
-            animate={{ width: H_FILL_WIDTH, opacity: GLOW_OPACITY }}
-            transition={{ duration: CYCLE, times: TIMES, repeat: Infinity, ease: "easeInOut" }}
-          />
-
-          <motion.div
-            aria-hidden
-            className="pointer-events-none absolute top-8 hidden h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full lg:block"
-            style={{
-              background: "var(--accent-2)",
-              boxShadow: "0 0 10px 2px var(--accent-2), 0 0 22px 6px rgba(34,211,238,0.45)",
-            }}
-            animate={{ left: H_DOT_LEFT, opacity: GLOW_OPACITY }}
-            transition={{ duration: CYCLE, times: TIMES, repeat: Infinity, ease: "easeInOut" }}
-          />
-
-          {vStops && (
-            <div
+          {pathD && size.width > 0 && size.height > 0 && (
+            <svg
               aria-hidden
-              className="pointer-events-none absolute left-1/2 w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-border to-transparent sm:hidden"
-              style={{ top: vStops[0], height: vStops[3] - vStops[0] }}
-            />
-          )}
-
-          {vStops && V_FILL_HEIGHT && (
-            <motion.div
-              aria-hidden
-              className="pointer-events-none absolute left-1/2 w-px -translate-x-1/2 sm:hidden"
-              style={{
-                top: vStops[0],
-                background: "linear-gradient(to bottom, transparent, var(--accent-2))",
-                boxShadow: "0 0 8px var(--accent-2)",
-              }}
-              animate={{ height: V_FILL_HEIGHT, opacity: GLOW_OPACITY }}
-              transition={{ duration: CYCLE, times: TIMES, repeat: Infinity, ease: "easeInOut" }}
-            />
-          )}
-
-          {vStops && V_DOT_TOP && (
-            <motion.div
-              aria-hidden
-              className="pointer-events-none absolute left-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full sm:hidden"
-              style={{
-                background: "var(--accent-2)",
-                boxShadow: "0 0 10px 2px var(--accent-2), 0 0 22px 6px rgba(34,211,238,0.45)",
-              }}
-              animate={{ top: V_DOT_TOP, opacity: GLOW_OPACITY }}
-              transition={{ duration: CYCLE, times: TIMES, repeat: Infinity, ease: "easeInOut" }}
-            />
+              className="pointer-events-none absolute inset-0"
+              width="100%"
+              height="100%"
+              viewBox={`0 0 ${size.width} ${size.height}`}
+              preserveAspectRatio="none"
+            >
+              <path d={pathD} stroke="var(--border)" strokeWidth={1} fill="none" />
+              <motion.path
+                d={pathD}
+                stroke="var(--accent-2)"
+                strokeWidth={2}
+                strokeLinecap="round"
+                fill="none"
+                style={{ filter: "drop-shadow(0 0 6px var(--accent-2))" }}
+                animate={{ pathLength: pathLengthKeyframes ?? undefined, opacity: GLOW_OPACITY }}
+                transition={{ duration: CYCLE, times: TIMES, repeat: Infinity, ease: "easeInOut" }}
+              />
+              <motion.circle
+                r={5}
+                fill="var(--accent-2)"
+                style={{ filter: "drop-shadow(0 0 8px var(--accent-2))" }}
+                animate={{ cx: dotX ?? undefined, cy: dotY ?? undefined, opacity: GLOW_OPACITY }}
+                transition={{ duration: CYCLE, times: TIMES, repeat: Infinity, ease: "easeInOut" }}
+              />
+            </svg>
           )}
 
           {STEPS.map((step, i) => (
