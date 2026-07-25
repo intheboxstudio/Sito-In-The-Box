@@ -112,16 +112,15 @@ export default function CodeBackdrop({ className = "inset-0" }: CodeBackdropProp
       className={`pointer-events-none absolute overflow-hidden ${className}`}
       style={{
         maskImage:
-          "linear-gradient(to bottom, transparent, black 30%, black 85%, transparent)",
+          "linear-gradient(to bottom, transparent, black 10%, black 92%, transparent)",
         WebkitMaskImage:
-          "linear-gradient(to bottom, transparent, black 30%, black 85%, transparent)",
+          "linear-gradient(to bottom, transparent, black 10%, black 92%, transparent)",
       }}
     >
       {/* Anchored to the top so growing lines extend downward, away from
           the hero content above, instead of centering (and creeping up
-          into it) as the snippet types out. Low opacity keeps it a subtle
-          backdrop rather than competing text at any viewport height. */}
-      <pre className="absolute left-1/2 top-0 w-[90vw] max-w-[2400px] -translate-x-1/2 whitespace-pre-wrap break-words px-6 font-mono text-base leading-relaxed text-white opacity-[0.16] sm:text-lg">
+          into it) as the snippet types out. */}
+      <pre className="absolute left-1/2 top-0 w-[90vw] max-w-[2400px] -translate-x-1/2 whitespace-pre-wrap break-words px-6 font-mono text-base leading-relaxed text-white/40 sm:text-lg">
         {text.split("\n").map((line, i) => renderLine(line, i))}
         <span className="text-red-500">▍</span>
       </pre>

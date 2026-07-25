@@ -19,9 +19,9 @@ export default function Hero() {
   return (
     <section
       id="top"
-      className="relative flex min-h-screen flex-col overflow-hidden px-6 pt-24 text-center"
+      className="relative flex min-h-screen flex-col overflow-hidden px-6 pb-6 pt-24 text-center"
     >
-      <div className="flex flex-1 flex-col items-center justify-center">
+      <div className="flex flex-1 flex-col items-center justify-center sm:justify-end">
         <div className="mb-6 flex w-full justify-center sm:mb-10">
           <HeroChart />
         </div>
@@ -83,7 +83,13 @@ export default function Hero() {
         </motion.div>
       </div>
 
-      <CodeBackdrop className="hidden sm:block inset-x-0 bottom-0 -z-10 h-[clamp(9rem,24vh,18rem)]" />
+      <div className="hidden flex-1 sm:block" />
+
+      <div className="relative hidden h-[clamp(6rem,14vh,9rem)] shrink-0 sm:block">
+        <CodeBackdrop className="inset-0 -z-10" />
+      </div>
+
+      <div className="hidden flex-1 sm:block" />
     </section>
   );
 }
