@@ -3,6 +3,13 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Privacy Policy | IN THE BOX STUDIO",
   description: "Informativa sulla privacy e sul trattamento dei dati personali.",
+  alternates: {
+    canonical: "/privacy",
+  },
+  robots: {
+    index: false,
+    follow: true,
+  },
 };
 
 export default function PrivacyPage() {

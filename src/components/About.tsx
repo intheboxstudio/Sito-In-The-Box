@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import Counter from "./Counter";
 
 const STATS = [
@@ -57,11 +58,13 @@ export default function About() {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="flex flex-col gap-8"
         >
-          <div className="mx-auto w-48 overflow-hidden rounded-3xl border border-border sm:w-56 lg:mx-0 lg:w-full lg:max-w-xs">
-            <img
+          <div className="relative mx-auto aspect-[4/5] w-48 overflow-hidden rounded-3xl border border-border sm:w-56 lg:mx-0 lg:w-full lg:max-w-xs">
+            <Image
               src="/marco-losso.png"
-              alt="Marco Losso"
-              className="aspect-[4/5] w-full object-cover"
+              alt="Marco Losso, fondatore di IN THE BOX STUDIO"
+              fill
+              sizes="(min-width: 1024px) 320px, (min-width: 640px) 224px, 192px"
+              className="object-cover"
             />
           </div>
 

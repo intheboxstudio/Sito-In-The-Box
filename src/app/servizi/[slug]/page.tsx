@@ -23,6 +23,9 @@ export async function generateMetadata({
   return {
     title: `${service.title} | IN THE BOX STUDIO`,
     description: service.tagline,
+    alternates: {
+      canonical: `/servizi/${service.slug}`,
+    },
   };
 }
 
@@ -36,8 +39,29 @@ export default async function ServiceDetailPage({
 
   if (!service) notFound();
 
+  const serviceJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: service.title,
+    description: service.tagline,
+    url: `https://intheboxstudio.it/servizi/${service.slug}`,
+    provider: {
+      "@type": "ProfessionalService",
+      name: "IN THE BOX STUDIO",
+      url: "https://intheboxstudio.it",
+    },
+    areaServed: [
+      { "@type": "City", name: "Reggio Emilia" },
+      { "@type": "Country", name: "Italia" },
+    ],
+  };
+
   return (
     <main className="px-6 pb-32 pt-32 sm:pt-40">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
+      />
       <div className="mx-auto max-w-4xl">
         <Link
           href="/#servizi"

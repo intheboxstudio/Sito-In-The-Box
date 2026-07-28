@@ -4,7 +4,10 @@ import ContactForm from "@/components/ContactForm";
 export const metadata: Metadata = {
   title: "Contatti | IN THE BOX STUDIO",
   description:
-    "Scrivimi per parlare del tuo progetto di automazione o intelligenza artificiale.",
+    "Scrivimi per parlare del tuo progetto di automazione o intelligenza artificiale. Con sede a Reggio Emilia, lavoro con aziende in tutta Italia.",
+  alternates: {
+    canonical: "/contatti",
+  },
 };
 
 export default function ContattiPage() {

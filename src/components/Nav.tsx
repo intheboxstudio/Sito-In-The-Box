@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import MagneticButton from "./MagneticButton";
@@ -46,7 +47,14 @@ export default function Nav() {
           onClick={() => setMenuOpen(false)}
           className="flex items-center gap-2 font-mono text-sm font-semibold tracking-tight"
         >
-          <img src="/logo-bianco.png" alt="" className="h-7 w-7 object-contain" />
+          <Image
+            src="/logo-bianco.png"
+            alt=""
+            width={28}
+            height={28}
+            priority
+            className="h-7 w-7 object-contain"
+          />
           <span>
             IN THE BOX <span className="text-gradient">STUDIO</span>
           </span>
