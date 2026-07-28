@@ -1,13 +1,19 @@
-import { put, head } from "@vercel/blob";
+import { put, head, BlobError } from "@vercel/blob";
 import type { BlogIndexEntry, BlogPost } from "./types";
 
 const INDEX_PATHNAME = "blog/index.json";
 const postPathname = (slug: string) => `blog/posts/${slug}.json`;
 const lockPathname = (date: string) => `blog/locks/${date}.lock`;
 
+// Pass the token explicitly rather than relying on @vercel/blob's ambient
+// auth detection: when a VERCEL_OIDC_TOKEN happens to be present but OIDC
+// isn't provisioned for the current environment, the SDK prefers it over
+// BLOB_READ_WRITE_TOKEN and fails even though a valid token is available.
+const blobAuth = { token: process.env.BLOB_READ_WRITE_TOKEN };
+
 async function resolveBlobUrl(pathname: string): Promise<string | null> {
   try {
-    const result = await head(pathname);
+    const result = await head(pathname, blobAuth);
     return result.url;
   } catch {
     return null;
@@ -31,6 +37,7 @@ async function readJson<T>(pathname: string, revalidateSeconds?: number): Promis
 
 async function writeJson(pathname: string, data: unknown): Promise<void> {
   await put(pathname, JSON.stringify(data), {
+    ...blobAuth,
     access: "public",
     addRandomSuffix: false,
     allowOverwrite: true,
@@ -56,21 +63,28 @@ export async function slugExists(slug: string): Promise<boolean> {
 }
 
 /**
- * Claims today's generation run. Returns false if a run for this date has
- * already started/completed, closing the race window from Vercel's
- * best-effort cron delivery occasionally double-invoking the same schedule.
+ * Claims today's generation run. Returns false only when the lock blob
+ * already exists (a run for this date has already started/completed,
+ * closing the race window from Vercel's best-effort cron delivery
+ * occasionally double-invoking the same schedule). Any other failure (bad
+ * token, network error, suspended store, ...) is rethrown so the caller
+ * surfaces a real error instead of silently treating it as "already ran".
  */
 export async function acquireDailyLock(dateISO: string): Promise<boolean> {
   try {
     await put(lockPathname(dateISO), "locked", {
+      ...blobAuth,
       access: "public",
       addRandomSuffix: false,
       allowOverwrite: false,
       contentType: "text/plain",
     });
     return true;
-  } catch {
-    return false;
+  } catch (error) {
+    if (error instanceof BlobError && /already exists/i.test(error.message)) {
+      return false;
+    }
+    throw error;
   }
 }
 
