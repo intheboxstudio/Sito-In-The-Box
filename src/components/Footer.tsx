@@ -20,6 +20,9 @@ export default function Footer() {
           >
             Email
           </a>
+          <Link href="/blog" className="transition-colors hover:text-foreground">
+            Blog
+          </Link>
           <Link href="/privacy" className="transition-colors hover:text-foreground">
             Privacy
           </Link>

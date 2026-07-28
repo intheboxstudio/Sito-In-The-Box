@@ -10,16 +10,22 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.113.0",
+    "@extractus/article-extractor": "^8.1.0",
     "@next/third-parties": "^16.2.12",
+    "@vercel/blob": "^2.6.1",
     "framer-motion": "^12.42.2",
     "lucide-react": "^1.26.0",
     "next": "16.2.11",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "resend": "^6.18.0"
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
+    "resend": "^6.18.0",
+    "rss-parser": "^3.13.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@tailwindcss/typography": "^0.5.20",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

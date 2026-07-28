@@ -10,6 +10,7 @@ import MagneticButton from "./MagneticButton";
 const LINKS = [
   { href: "/#servizi", label: "Servizi" },
   { href: "/#progetti", label: "Progetti" },
+  { href: "/blog", label: "Blog" },
   { href: "/chi-sono", label: "Chi sono" },
   { href: "/faq", label: "FAQ" },
   { href: "/contatti", label: "Contatti" },

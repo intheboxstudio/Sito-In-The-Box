@@ -151,6 +151,17 @@ export default async function ServiceDetailPage({
               Parliamo del tuo progetto
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </MagneticButton>
+            {service.slug === "blog-automatici" && (
+              <div>
+                <Link
+                  href="/blog"
+                  className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-accent hover:underline"
+                >
+                  Vedi il blog live di questo sito
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+            )}
           </Reveal>
         </div>
       </div>

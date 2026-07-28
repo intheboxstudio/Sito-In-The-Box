@@ -1,11 +1,13 @@
 import type { MetadataRoute } from "next";
 import { SERVICES } from "@/data/services";
+import { getIndex } from "@/lib/blog/store";
 
 const BASE_URL = "https://intheboxstudio.it";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes = [
     { path: "", changeFrequency: "weekly" as const, priority: 1 },
+    { path: "/blog", changeFrequency: "daily" as const, priority: 0.8 },
     { path: "/chi-sono", changeFrequency: "monthly" as const, priority: 0.8 },
     { path: "/faq", changeFrequency: "monthly" as const, priority: 0.7 },
     { path: "/contatti", changeFrequency: "monthly" as const, priority: 0.9 },
@@ -23,5 +25,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.9,
   }));
 
-  return [...staticRoutes, ...serviceRoutes];
+  const blogPosts = await getIndex();
+  const blogRoutes = blogPosts.map((post) => ({
+    url: `${BASE_URL}/blog/${post.slug}`,
+    lastModified: new Date(post.publishedAt),
+    changeFrequency: "monthly" as const,
+    priority: 0.6,
+  }));
+
+  return [...staticRoutes, ...serviceRoutes, ...blogRoutes];
 }
