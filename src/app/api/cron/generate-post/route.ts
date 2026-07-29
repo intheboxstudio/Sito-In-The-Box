@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 import { fetchRecentNews } from "@/lib/blog/fetch-news";
 import { generateDailyArticle } from "@/lib/blog/generate-article";
 import { acquireDailyLock, savePost } from "@/lib/blog/store";
@@ -34,6 +35,8 @@ export async function GET(request: NextRequest) {
     }
 
     await savePost(post);
+    revalidatePath("/blog");
+    revalidatePath(`/blog/${post.slug}`);
 
     return NextResponse.json({ status: "published", date: today, slug: post.slug }, { status: 200 });
   } catch (error) {
