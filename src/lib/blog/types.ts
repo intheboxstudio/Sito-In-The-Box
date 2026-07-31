@@ -4,6 +4,8 @@ export type SourceRef = {
 };
 
 export type CoverImage = {
+  /** Pexels photo id — the uniqueness key that prevents an image being reused. */
+  id: string;
   url: string;
   photographer: string;
   photographerUrl: string;
@@ -12,6 +14,12 @@ export type CoverImage = {
 
 export type BlogPost = {
   slug: string;
+  /**
+   * Canonical id of the underlying news event ("openai-agent-huggingface-breach"),
+   * shared by every outlet reporting it. Two posts must never share a storyKey:
+   * one event = one article, forever.
+   */
+  storyKey: string;
   title: string;
   excerpt: string;
   tags: string[];
@@ -23,10 +31,13 @@ export type BlogPost = {
 
 export type BlogIndexEntry = Pick<
   BlogPost,
-  "slug" | "title" | "excerpt" | "tags" | "publishedAt"
+  "slug" | "storyKey" | "title" | "excerpt" | "tags" | "publishedAt"
 > & {
+  coverImageId: string;
   coverImageUrl: string;
   coverImageAlt: string;
+  /** Source URLs this post was written from — never reused by a later post. */
+  sourceUrls: string[];
 };
 
 export type NewsItem = {

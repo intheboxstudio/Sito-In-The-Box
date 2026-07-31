@@ -1,4 +1,12 @@
-import { put, head, BlobError } from "@vercel/blob";
+import { put, head, del, BlobError } from "@vercel/blob";
+import {
+  imageIdFromUrl,
+  normalizeStoryKey,
+  normalizeUrl,
+  usedImageIds,
+  usedSourceUrls,
+  usedStoryKeys,
+} from "./dedupe";
 import type { BlogIndexEntry, BlogPost } from "./types";
 
 const INDEX_PATHNAME = "blog/index.json";
@@ -88,23 +96,76 @@ export async function acquireDailyLock(dateISO: string): Promise<boolean> {
   }
 }
 
-/** Writes the post, then re-reads and rewrites the index with it prepended. */
-export async function savePost(post: BlogPost): Promise<void> {
-  await writeJson(postPathname(post.slug), post);
-
-  const currentIndex = await getIndex();
-  const entry: BlogIndexEntry = {
+export function indexEntryFor(post: BlogPost): BlogIndexEntry {
+  return {
     slug: post.slug,
+    storyKey: normalizeStoryKey(post.storyKey),
     title: post.title,
     excerpt: post.excerpt,
     tags: post.tags,
     publishedAt: post.publishedAt,
+    coverImageId: post.coverImage.id || imageIdFromUrl(post.coverImage.url),
     coverImageUrl: post.coverImage.url,
     coverImageAlt: post.coverImage.alt,
+    sourceUrls: post.sources.map((source) => source.url),
   };
-  const nextIndex = [entry, ...currentIndex.filter((e) => e.slug !== post.slug)].sort((a, b) =>
+}
+
+/**
+ * Final, non-negotiable uniqueness gate at the write boundary. The generation
+ * pipeline already filters duplicates much earlier; if anything still slips
+ * through, publication fails loudly instead of putting a repeated story or a
+ * repeated image on the blog.
+ */
+function assertUnique(post: BlogPost, index: BlogIndexEntry[]): void {
+  if (index.some((entry) => entry.slug === post.slug)) {
+    throw new Error(`[blog] refusing to overwrite existing post "${post.slug}"`);
+  }
+
+  const storyKey = normalizeStoryKey(post.storyKey);
+  if (!storyKey) {
+    throw new Error("[blog] refusing to publish a post without a storyKey");
+  }
+  if (usedStoryKeys(index).has(storyKey)) {
+    throw new Error(`[blog] story "${storyKey}" has already been published`);
+  }
+
+  const imageId = post.coverImage.id || imageIdFromUrl(post.coverImage.url);
+  if (usedImageIds(index).has(imageId)) {
+    throw new Error(`[blog] cover image "${imageId}" has already been used`);
+  }
+
+  const takenUrls = usedSourceUrls(index);
+  const reused = post.sources.find((source) => takenUrls.has(normalizeUrl(source.url)));
+  if (reused) {
+    throw new Error(`[blog] source "${reused.url}" was already used by another post`);
+  }
+}
+
+/** Validates uniqueness, writes the post, then rewrites the index with it prepended. */
+export async function savePost(post: BlogPost): Promise<void> {
+  const currentIndex = await getIndex();
+  assertUnique(post, currentIndex);
+
+  await writeJson(postPathname(post.slug), post);
+
+  const nextIndex = [indexEntryFor(post), ...currentIndex].sort((a, b) =>
     b.publishedAt.localeCompare(a.publishedAt),
   );
 
   await writeJson(INDEX_PATHNAME, nextIndex);
+}
+
+/** Removes a post and its index entry, freeing its story key and cover image. */
+export async function deletePost(slug: string): Promise<boolean> {
+  const url = await resolveBlobUrl(postPathname(slug));
+  if (url) await del(url, blobAuth);
+
+  const currentIndex = await getIndex();
+  const nextIndex = currentIndex.filter((entry) => entry.slug !== slug);
+  if (nextIndex.length !== currentIndex.length) {
+    await writeJson(INDEX_PATHNAME, nextIndex);
+  }
+
+  return url !== null;
 }
